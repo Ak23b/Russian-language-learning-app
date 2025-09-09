@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>🎯 Flashcard Quiz</h1>
+
+    {% if question %}
+        <p><b>What is the meaning of:</b> {{ question[1] }} ?</p>
+        <form method="POST">
+            <input type="text" name="answer" placeholder="Type English translation">
+            <button type="submit">Check</button>
+        </form>
+    {% else %}
+        <p>No flashcards available. Please add some first.</p>
+    {% endif %}
+
+    {% if result %}
+        <p>{{ result }}</p>
+        <a href="{{ url_for('quiz') }}">🔄 Try Another</a>
+    {% endif %}
+
+    <br><br>
+    <a href="{{ url_for('index') }}">⬅ Back</a>
+</body>
+</html>

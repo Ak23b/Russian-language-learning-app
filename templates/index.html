@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Russian Flashcards</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>📘 Russian Flashcards</h1>
+
+    <a href="{{ url_for('add') }}">➕ Add Flashcard</a> |
+    <a href="{{ url_for('quiz') }}">🎯 Take a Quiz</a>
+
+    <h2>All Flashcards</h2>
+    <ul>
+        {% for card in flashcards %}
+            <li><b>{{ card[1] }}</b> → {{ card[2] }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
