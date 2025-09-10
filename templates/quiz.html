@@ -16,6 +16,8 @@
         </form>
     {% else %}
         <p>No flashcards available. Please add some first.</p>
+        <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+
     {% endif %}
 
     {% if result %}
