@@ -2,21 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TTS Playback</title>
+    <title>Speak</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>🔊 Listen to the Word</h1>
-    <p><b>English:</b> {{ english }}</p>
-    <p><b>Russian:</b> {{ russian }}</p>
+    <div class="container">
+        <h2>English → Russian Text-to-Speech</h2>
 
-    <audio controls autoplay>
-        <source src="{{ url_for('static', filename='audio/' + filename.split('/')[-1]) }}" type="audio/wav">
-        Your browser does not support audio playback.
-    </audio>
+        <!-- Input form always visible -->
+        <form method="POST" action="{{ url_for('speak') }}">
+            <label for="text"><strong>Enter English text:</strong></label><br>
+            <textarea id="text" name="text" placeholder="Type English here..." required>{{ original_text or "" }}</textarea>
+            <button type="submit">Translate & Generate Speech</button>
+        </form>
 
-    <br><br>
-    <a href="{{ url_for('index') }}">⬅ Back</a>
-    <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+        <!-- Results appear after processing -->
+        {% if audio_file %}
+            <div class="results">
+                <p><strong>English Input:</strong> {{ original_text }}</p>
+                <p><strong>Translated Russian:</strong> {{ translated_text }}</p>
 
+                <p><strong>Generated Audio:</strong></p>
+                <audio controls>
+                    <source src="{{ audio_file }}" type="audio/wav">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+        {% endif %}
+
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">📚 Flashcards</a>
+            <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+        </div>
+    </div>
 </body>
 </html>
