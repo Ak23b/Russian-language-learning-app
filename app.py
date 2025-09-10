@@ -1,16 +1,24 @@
+import os
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from tts import text_to_speech  # import helper
+from tts import text_to_speech, translate_en_to_ru  # use our improved helper
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
 # -------------------------
+# Paths & Folders
+# -------------------------
+DATABASE = "flashcards.db"
+AUDIO_FOLDER = os.path.join("static", "audio")
+os.makedirs(AUDIO_FOLDER, exist_ok=True)
+
+# -------------------------
 # Database connection helper
 # -------------------------
 def get_db_connection():
-    conn = sqlite3.connect("flashcards.db")
+    conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -88,7 +96,7 @@ def quiz():
     return render_template("quiz.html", cards=cards)
 
 # -------------------------
-# Speak (TTS)
+# Speak (English → Russian → TTS)
 # -------------------------
 @app.route("/speak", methods=("GET", "POST"))
 def speak():
@@ -96,11 +104,24 @@ def speak():
         return redirect(url_for("login"))
 
     audio_file = None
-    if request.method == "POST":
-        text = request.form["text"]
-        audio_file = text_to_speech(text)
+    original_text = None
+    translated_text = None
 
-    return render_template("speak.html", audio_file=audio_file)
+    if request.method == "POST":
+        original_text = request.form["text"]
+
+        # Step 1: Translate EN → RU
+        translated_text = translate_en_to_ru(original_text)
+
+        # Step 2: Generate Russian TTS (we tell helper the input is EN)
+        audio_file = text_to_speech(original_text, input_lang="en")
+
+    return render_template(
+        "speak.html",
+        audio_file=audio_file,
+        original_text=original_text,
+        translated_text=translated_text,
+    )
 
 # -------------------------
 # Settings page
@@ -171,7 +192,6 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
-
 
 if __name__ == "__main__":
     app.run(debug=True)
