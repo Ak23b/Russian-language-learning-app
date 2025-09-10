@@ -1,87 +1,92 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
-from tts import text_to_speech   # Import our manual TTS helper
+import os
+from tts import text_to_speech   # import helper
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = "your_secret_key_here"
 
-DB_NAME = "flashcards.db"
+DB_FILE = "flashcards.db"
 
-# -------------------------
-# Database helper
-# -------------------------
+# ----------------------
+# Database setup
+# ----------------------
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS flashcards (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            english TEXT,
-            russian TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(DB_FILE) as conn:
+        c = conn.cursor()
+        # Users table
+        c.execute("""CREATE TABLE IF NOT EXISTS users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL
+                    )""")
+        # Flashcards table
+        c.execute("""CREATE TABLE IF NOT EXISTS flashcards (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER,
+                        russian TEXT NOT NULL,
+                        english TEXT NOT NULL,
+                        FOREIGN KEY(user_id) REFERENCES users(id)
+                    )""")
+        conn.commit()
 
 init_db()
 
-# -------------------------
+# ----------------------
+# Helpers
+# ----------------------
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# ----------------------
 # Routes
-# -------------------------
+# ----------------------
 @app.route("/")
 def index():
-    if "user" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
-
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM flashcards")
-    cards = cursor.fetchall()
+    conn = get_db_connection()
+    cards = conn.execute("SELECT * FROM flashcards WHERE user_id = ?", 
+                         (session["user_id"],)).fetchall()
     conn.close()
-
     return render_template("index.html", cards=cards)
 
-
-@app.route("/add", methods=["POST"])
+@app.route("/add", methods=["GET", "POST"])
 def add():
-    if "user" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
-    english = request.form["english"]
-    russian = request.form["russian"]
+    if request.method == "POST":
+        russian = request.form["russian"]
+        english = request.form["english"]
+        conn = get_db_connection()
+        conn.execute("INSERT INTO flashcards (user_id, russian, english) VALUES (?, ?, ?)",
+                     (session["user_id"], russian, english))
+        conn.commit()
+        conn.close()
+        flash("Flashcard added successfully!")
+        return redirect(url_for("index"))
+    return render_template("add.html")
 
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO flashcards (english, russian) VALUES (?, ?)", (english, russian))
-    conn.commit()
-    conn.close()
-
-    return redirect(url_for("index"))
-
-
-@app.route("/speak/<int:card_id>")
-def speak(card_id):
-    if "user" not in session:
+@app.route("/quiz")
+def quiz():
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("SELECT russian FROM flashcards WHERE id = ?", (card_id,))
-    row = cursor.fetchone()
+    conn = get_db_connection()
+    cards = conn.execute("SELECT * FROM flashcards WHERE user_id = ?", 
+                         (session["user_id"],)).fetchall()
     conn.close()
+    return render_template("quiz.html", cards=cards)
 
-    if row:
-        russian_text = row[0]
-        text_to_speech(russian_text)  # Manual TTS call
-    return redirect(url_for("index"))
-
+@app.route("/speak/<word>")
+def speak(word):
+    # Save speech audio into static folder
+    audio_path = os.path.join("static", f"{word}.mp3")
+    text_to_speech(word, audio_path)
+    return render_template("speak.html", word=word, audio_file=audio_path)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -89,19 +94,20 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
-        user = cursor.fetchone()
+        conn = get_db_connection()
+        user = conn.execute("SELECT * FROM users WHERE username = ? AND password = ?",
+                            (username, password)).fetchone()
         conn.close()
 
         if user:
-            session["user"] = username
+            session["user_id"] = user["id"]
+            session["username"] = user["username"]
+            flash("Login successful!")
             return redirect(url_for("index"))
         else:
-            return render_template("login.html", error="Invalid credentials")
-    return render_template("login.html")
+            flash("Invalid username or password")
 
+    return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -109,25 +115,34 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
+        conn = get_db_connection()
         try:
-            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+            conn.execute("INSERT INTO users (username, password) VALUES (?, ?)",
+                         (username, password))
             conn.commit()
+            flash("Registration successful! Please log in.")
+            return redirect(url_for("login"))
         except sqlite3.IntegrityError:
-            return render_template("register.html", error="Username already exists")
+            flash("Username already taken!")
         finally:
             conn.close()
 
-        return redirect(url_for("login"))
     return render_template("register.html")
-
 
 @app.route("/logout")
 def logout():
-    session.pop("user", None)
+    session.clear()
+    flash("Logged out successfully.")
     return redirect(url_for("login"))
 
+@app.route("/settings")
+def settings():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    return render_template("settings.html")
 
+# ----------------------
+# Run app
+# ----------------------
 if __name__ == "__main__":
     app.run(debug=True)
