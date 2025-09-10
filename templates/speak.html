@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TTS Playback</title>
+</head>
+<body>
+    <h1>🔊 Listen to the Word</h1>
+    <p><b>English:</b> {{ english }}</p>
+    <p><b>Russian:</b> {{ russian }}</p>
+
+    <audio controls autoplay>
+        <source src="{{ url_for('static', filename='audio/' + filename.split('/')[-1]) }}" type="audio/wav">
+        Your browser does not support audio playback.
+    </audio>
+
+    <br><br>
+    <a href="{{ url_for('index') }}">⬅ Back</a>
+</body>
+</html>
