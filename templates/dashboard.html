@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>👋 Welcome, {{ session['username'] }}!</h1>
+    <p>Choose an activity:</p>
+
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">📖 Flashcards</a></li>
+            <li><a href="{{ url_for('quiz') }}">🎯 Quiz</a></li>
+            <li><a href="{{ url_for('speak') }}">🗣 Speak</a></li>
+            <li><a href="{{ url_for('settings') }}">⚙ Settings</a></li>
+            <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
+        </ul>
+    </nav>
+</body>
+</html>
