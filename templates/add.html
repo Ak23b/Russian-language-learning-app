@@ -9,11 +9,13 @@
     <h1>➕ Add a Flashcard</h1>
 
     <form method="POST">
-        <label for="russian">Russian Word:</label>
-        <input type="text" name="russian" required>
+        <!-- English is stored as "front" -->
+        <label for="front">English Word:</label>
+        <input type="text" name="front" required>
 
-        <label for="english">English Translation:</label>
-        <input type="text" name="english" required>
+        <!-- Russian is stored as "back" -->
+        <label for="back">Russian Translation:</label>
+        <input type="text" name="back" required>
 
         <button type="submit">Save</button>
     </form>
