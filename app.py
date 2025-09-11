@@ -15,12 +15,42 @@ AUDIO_FOLDER = os.path.join("static", "audio")
 os.makedirs(AUDIO_FOLDER, exist_ok=True)
 
 # -------------------------
-# Database connection helper
+# Database helpers
 # -------------------------
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
+
+def init_db():
+    conn = get_db_connection()
+    c = conn.cursor()
+
+    # Users table
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    """)
+
+    # Flashcards table
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS flashcards (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            front TEXT NOT NULL,
+            back TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+# Initialize DB on startup
+init_db()
 
 # -------------------------
 # Home → redirect to login
