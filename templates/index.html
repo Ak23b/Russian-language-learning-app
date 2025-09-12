@@ -2,22 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Russian Flashcards</title>
+    <title>My Saved Audios</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>📘 Russian Flashcards</h1>
+    <h1>📂 My Saved Audios</h1>
 
-    <a href="{{ url_for('add') }}">➕ Add Flashcard</a> |
-    <a href="{{ url_for('quiz') }}">🎯 Take a Quiz</a> |
-    <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+    <nav>
+        <a href="{{ url_for('speak') }}">🗣 Generate New Audio</a> |
+        <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+        {% if session.get('username') %}
+            | <a href="{{ url_for('settings') }}">⚙ Settings</a>
+        {% endif %}
+    </nav>
 
-
-    <h2>All Flashcards</h2>
-    <ul>
-        {% for card in flashcards %}
-            <li><b>{{ card[1] }}</b> → {{ card[2] }}</li>
-        {% endfor %}
-    </ul>
+    <h2>Saved Audio Files</h2>
+    {% if audios %}
+        <ul>
+            {% for audio in audios %}
+                <li>
+                    🎵 {{ audio }}
+                    <audio controls>
+                        <source src="{{ url_for('static', filename='audio/' ~ audio) }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No audio files saved yet. Try generating some in <a href="{{ url_for('speak') }}">Speak</a>.</p>
+    {% endif %}
 </body>
 </html>
