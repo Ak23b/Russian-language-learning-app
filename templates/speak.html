@@ -27,12 +27,21 @@
                     <source src="{{ audio_file }}" type="audio/wav">
                     Your browser does not support the audio element.
                 </audio>
+
+                <!-- Manual Save Option -->
+                <form method="POST" action="{{ url_for('save_audio') }}">
+                    <!-- Hidden fields to pass all needed info -->
+                    <input type="hidden" name="filename" value="{{ audio_filename }}">
+                    <input type="hidden" name="original_text" value="{{ original_text }}">
+                    <input type="hidden" name="translated_text" value="{{ translated_text }}">
+                    <button type="submit" class="btn">💾 Save this Audio</button>
+                </form>
             </div>
         {% endif %}
 
         <div class="nav-links">
-            <a href="{{ url_for('index') }}">📚 Flashcards</a>
             <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+            <a href="{{ url_for('library') }}">🎵 Audio Library</a>
         </div>
     </div>
 </body>
