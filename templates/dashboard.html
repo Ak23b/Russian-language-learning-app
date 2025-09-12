@@ -2,21 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <title>Audio Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>👋 Welcome, {{ session['username'] }}!</h1>
-    <p>Choose an activity:</p>
+    <header>
+        <h1>🎧 Welcome, {{ session['username'] }}!</h1>
+        <p class="subtitle">What would you like to do today?</p>
+    </header>
 
-    <nav>
-        <ul>
-            <li><a href="{{ url_for('index') }}">📖 Flashcards</a></li>
-            <li><a href="{{ url_for('quiz') }}">🎯 Quiz</a></li>
-            <li><a href="{{ url_for('speak') }}">🗣 Speak</a></li>
-            <li><a href="{{ url_for('settings') }}">⚙ Settings</a></li>
-            <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
-        </ul>
-    </nav>
+    <main class="dashboard">
+        <div class="card">
+            <h2>🗣 Speak</h2>
+            <p>Enter English text and generate Russian translation with audio.</p>
+            <a class="btn" href="{{ url_for('speak') }}">Go →</a>
+        </div>
+
+        <div class="card">
+            <h2>📂 Library</h2>
+            <p>Replay or manage your saved audio files.</p>
+            <a class="btn" href="{{ url_for('library') }}">Go →</a>
+        </div>
+
+        <div class="card">
+            <h2>⚙ Settings</h2>
+            <p>Update preferences and audio options.</p>
+            <a class="btn" href="{{ url_for('settings') }}">Go →</a>
+        </div>
+
+        <div class="card">
+            <h2>🚪 Logout</h2>
+            <p>End your session safely.</p>
+            <a class="btn danger" href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </main>
 </body>
 </html>
