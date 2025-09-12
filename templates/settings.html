@@ -7,27 +7,30 @@
 </head>
 <body>
     <div class="container">
-        <h2>Settings</h2>
+        <h2>⚙ Settings</h2>
         
         <form action="{{ url_for('settings') }}" method="POST">
+            <!-- Text-to-Speech Setting -->
             <label for="tts">Text-to-Speech</label>
             <select id="tts" name="tts">
-                <option value="enabled" {% if user_settings.tts == 'enabled' %}selected{% endif %}>Enabled</option>
-                <option value="disabled" {% if user_settings.tts == 'disabled' %}selected{% endif %}>Disabled</option>
+                <option value="enabled" {% if user_settings['tts'] == 'enabled' %}selected{% endif %}>Enabled</option>
+                <option value="disabled" {% if user_settings['tts'] == 'disabled' %}selected{% endif %}>Disabled</option>
             </select>
 
+            <!-- Quiz Mode Setting -->
             <label for="quiz_mode">Quiz Mode</label>
             <select id="quiz_mode" name="quiz_mode">
-                <option value="multiple_choice" {% if user_settings.quiz_mode == 'multiple_choice' %}selected{% endif %}>Multiple Choice</option>
-                <option value="typing" {% if user_settings.quiz_mode == 'typing' %}selected{% endif %}>Typing</option>
+                <option value="multiple_choice" {% if user_settings['quiz_mode'] == 'multiple_choice' %}selected{% endif %}>Multiple Choice</option>
+                <option value="typing" {% if user_settings['quiz_mode'] == 'typing' %}selected{% endif %}>Typing</option>
             </select>
 
-            <button type="submit">Save Settings</button>
+            <button type="submit">💾 Save Settings</button>
         </form>
 
-        <p><a href="{{ url_for('index') }}">⬅ Back to Home</a></p>
-        <p><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></p>
-
+        <div class="nav-links">
+            <p><a href="{{ url_for('index') }}">⬅ Back to Home</a></p>
+            <p><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></p>
+        </div>
     </div>
 </body>
 </html>
