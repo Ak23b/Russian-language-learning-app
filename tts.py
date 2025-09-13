@@ -46,12 +46,15 @@ def translate_en_to_ru(text: str) -> str:
     return russian.strip()
 
 
-def text_to_speech(text: str, filename: str = None, input_lang: str = "en") -> str:
+def text_to_speech(text: str, filename: str = None, input_lang: str = "en", output_folder: str = AUDIO_DIR):
     """
     Convert English → Russian → Speech (default).
     Or directly Russian → Speech if input_lang="ru".
-    
-    Returns the relative URL (e.g. '/static/audio/file.wav') for Flask templates.
+
+    Returns:
+        (filename, web_path)
+        filename = e.g. "привет_1a2b3c4d_1694556777.wav"
+        web_path = e.g. "/static/audio/привет_1a2b3c4d_1694556777.wav"
     """
 
     # -------------------------
@@ -74,7 +77,6 @@ def text_to_speech(text: str, filename: str = None, input_lang: str = "en") -> s
     # -------------------------
     # Step 2: Generate unique filename
     # -------------------------
-    # Use hash for uniqueness
     text_hash = hashlib.md5(russian_text.encode("utf-8")).hexdigest()[:8]
     timestamp = int(time.time())
     base_name = re.sub(r"[^\w\s-]", "", russian_text).strip().replace(" ", "_")
@@ -84,14 +86,13 @@ def text_to_speech(text: str, filename: str = None, input_lang: str = "en") -> s
     if not filename:
         filename = f"{base_name}_{text_hash}_{timestamp}.wav"
 
-    filepath = os.path.join(AUDIO_DIR, filename)
+    filepath = os.path.join(output_folder, filename)
 
     # -------------------------
     # Step 3: Generate speech
     # -------------------------
     inputs = processor(text=russian_text, return_tensors="pt")
 
-    # Make sure input_ids are correct type & device
     if "input_ids" in inputs:
         inputs["input_ids"] = inputs["input_ids"].to(dtype=torch.long, device=device)
 
@@ -105,9 +106,10 @@ def text_to_speech(text: str, filename: str = None, input_lang: str = "en") -> s
     print(f"✅ Audio saved as: {filepath}")
 
     # -------------------------
-    # Step 5: Return relative URL for Flask
+    # Step 5: Return filename + relative URL
     # -------------------------
-    return f"/static/audio/{filename}"
+    web_path = f"/static/audio/{filename}"
+    return filename, web_path
 
 
 # -------------------------
@@ -115,5 +117,6 @@ def text_to_speech(text: str, filename: str = None, input_lang: str = "en") -> s
 # -------------------------
 if __name__ == "__main__":
     test_text = "Hello, how are you?"
-    url = text_to_speech(test_text, input_lang="en")
+    fname, url = text_to_speech(test_text, input_lang="en")
+    print(f"📂 Filename: {fname}")
     print(f"🎧 Flask URL: {url}")

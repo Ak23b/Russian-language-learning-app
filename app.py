@@ -2,7 +2,7 @@ import os
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from tts import text_to_speech, translate_en_to_ru  # use our improved helper
+from tts import text_to_speech, translate_en_to_ru  # helper functions
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -35,13 +35,25 @@ def init_db():
         )
     """)
 
-    # Flashcards table
+    # Audio cards table
     c.execute("""
-        CREATE TABLE IF NOT EXISTS flashcards (
+        CREATE TABLE IF NOT EXISTS audio_cards (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            front TEXT NOT NULL,
-            back TEXT NOT NULL,
             user_id INTEGER NOT NULL,
+            original_text TEXT NOT NULL,
+            translated_text TEXT NOT NULL,
+            audio_path TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+
+    # Settings table
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER UNIQUE NOT NULL,
+            tts TEXT DEFAULT 'enabled',
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     """)
@@ -49,8 +61,17 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Initialize DB on startup
+# Initialize DB
 init_db()
+
+# -------------------------
+# Index (My Saved Audios shortcut)
+# -------------------------
+@app.route("/index")
+def index():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    return redirect(url_for("library"))
 
 # -------------------------
 # Home → redirect to login
@@ -62,7 +83,7 @@ def home():
     return redirect(url_for("login"))
 
 # -------------------------
-# Dashboard page
+# Dashboard
 # -------------------------
 @app.route("/dashboard")
 def dashboard():
@@ -71,62 +92,7 @@ def dashboard():
     return render_template("dashboard.html")
 
 # -------------------------
-# Flashcards page
-# -------------------------
-@app.route("/index")
-def index():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    conn = get_db_connection()
-    cards = conn.execute(
-        "SELECT * FROM flashcards WHERE user_id = ?",
-        (session["user_id"],),
-    ).fetchall()
-    conn.close()
-    return render_template("index.html", cards=cards)
-
-# -------------------------
-# Add flashcard
-# -------------------------
-@app.route("/add", methods=("GET", "POST"))
-def add():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    if request.method == "POST":
-        front = request.form["front"]
-        back = request.form["back"]
-
-        conn = get_db_connection()
-        conn.execute(
-            "INSERT INTO flashcards (front, back, user_id) VALUES (?, ?, ?)",
-            (front, back, session["user_id"]),
-        )
-        conn.commit()
-        conn.close()
-        return redirect(url_for("index"))
-
-    return render_template("add.html")
-
-# -------------------------
-# Quiz page
-# -------------------------
-@app.route("/quiz")
-def quiz():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    conn = get_db_connection()
-    cards = conn.execute(
-        "SELECT * FROM flashcards WHERE user_id = ?",
-        (session["user_id"],),
-    ).fetchall()
-    conn.close()
-    return render_template("quiz.html", cards=cards)
-
-# -------------------------
-# Speak (English → Russian → TTS)
+# Speak (English → Russian → TTS, preview only)
 # -------------------------
 @app.route("/speak", methods=("GET", "POST"))
 def speak():
@@ -134,33 +100,115 @@ def speak():
         return redirect(url_for("login"))
 
     audio_file = None
+    audio_filename = None
     original_text = None
     translated_text = None
 
     if request.method == "POST":
         original_text = request.form["text"]
 
-        # Step 1: Translate EN → RU
+        # Translate EN → RU
         translated_text = translate_en_to_ru(original_text)
 
-        # Step 2: Generate Russian TTS (we tell helper the input is EN)
-        audio_file = text_to_speech(original_text, input_lang="en")
+        # Generate Russian TTS file (preview only)
+        audio_filename, audio_file = text_to_speech(
+            original_text, input_lang="en", output_folder=AUDIO_FOLDER
+        )
 
     return render_template(
         "speak.html",
         audio_file=audio_file,
+        audio_filename=audio_filename,
         original_text=original_text,
         translated_text=translated_text,
     )
 
 # -------------------------
-# Settings page
+# Save Audio (manual save to DB)
 # -------------------------
-@app.route("/settings")
+@app.route("/save_audio", methods=("POST",))
+def save_audio():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    original_text = request.form["original_text"]
+    translated_text = request.form["translated_text"]
+    audio_filename = request.form["filename"]
+
+    # Build path for DB storage
+    audio_path = os.path.join("static", "audio", audio_filename)
+
+    conn = get_db_connection()
+    conn.execute(
+        "INSERT INTO audio_cards (user_id, original_text, translated_text, audio_path) VALUES (?, ?, ?, ?)",
+        (session["user_id"], original_text, translated_text, audio_path),
+    )
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("library"))
+
+# -------------------------
+# Library (list saved audios)
+# -------------------------
+@app.route("/library")
+def library():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cards = conn.execute(
+        "SELECT * FROM audio_cards WHERE user_id = ? ORDER BY created_at DESC",
+        (session["user_id"],),
+    ).fetchall()
+    conn.close()
+
+    return render_template("library.html", cards=cards)
+
+# -------------------------
+# Settings
+# -------------------------
+@app.route("/settings", methods=("GET", "POST"))
 def settings():
     if "user_id" not in session:
         return redirect(url_for("login"))
-    return render_template("settings.html")
+
+    conn = get_db_connection()
+
+    # Get settings
+    user_settings = conn.execute(
+        "SELECT * FROM settings WHERE user_id = ?", (session["user_id"],)
+    ).fetchone()
+
+    # If no settings yet, insert defaults
+    if not user_settings:
+        conn.execute(
+            "INSERT INTO settings (user_id, tts) VALUES (?, ?)",
+            (session["user_id"], "enabled"),
+        )
+        conn.commit()
+        user_settings = {"tts": "enabled"}
+
+    conn.close()
+    return render_template("settings.html", user_settings=user_settings)
+
+# Update settings
+@app.route("/update_settings", methods=("POST",))
+def update_settings():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    tts_setting = request.form.get("tts", "enabled")
+
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE settings SET tts = ? WHERE user_id = ?",
+        (tts_setting, session["user_id"]),
+    )
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("settings"))
 
 # -------------------------
 # Register
@@ -184,6 +232,15 @@ def register():
         conn.execute(
             "INSERT INTO users (username, password) VALUES (?, ?)",
             (username, hashed_pw),
+        )
+        conn.commit()
+
+        # Initialize settings for this user
+        user_id = conn.execute(
+            "SELECT id FROM users WHERE username = ?", (username,)
+        ).fetchone()["id"]
+        conn.execute(
+            "INSERT INTO settings (user_id, tts) VALUES (?, ?)", (user_id, "enabled")
         )
         conn.commit()
         conn.close()

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Library</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>🎵 Your Audio Library</h1>
+
+    {% if cards and cards|length > 0 %}
+      <ul class="audio-list">
+        {% for card in cards %}
+          <li class="audio-item">
+            <div class="audio-info">
+              <p><strong>English:</strong> {{ card.original_text }}</p>
+              <p><strong>Russian:</strong> {{ card.translated_text }}</p>
+              <p class="timestamp">💾 Saved on: {{ card.created_at }}</p>
+            </div>
+            
+            <audio controls>
+              <source src="{{ card.audio_path }}" type="audio/wav">
+              Your browser does not support the audio element.
+            </audio>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-message">No saved audios yet. Go back and create one!</p>
+    {% endif %}
+
+    <div class="back-link">
+      <a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>
