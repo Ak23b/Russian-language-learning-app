@@ -24,6 +24,11 @@
               <source src="{{ card.audio_path }}" type="audio/wav">
               Your browser does not support the audio element.
             </audio>
+
+            <!-- Delete button -->
+            <form method="POST" action="{{ url_for('delete_audio', audio_id=card.id) }}" class="delete-form">
+              <button type="submit" class="btn danger">🗑 Delete</button>
+            </form>
           </li>
         {% endfor %}
       </ul>
