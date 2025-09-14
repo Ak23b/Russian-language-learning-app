@@ -1,10 +1,16 @@
+/* Global Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #121212;
     color: #e0e0e0;
     text-align: center;
     padding: 20px;
-    margin: 0;
 }
 
 /* Headings */
@@ -26,39 +32,68 @@ a:hover {
     color: #00ffc6;
 }
 
-/* Forms */
+/* --- Forms --- */
 form {
     margin: 20px auto;
     padding: 20px;
     background: #1e1e1e;
     border-radius: 10px;
-    width: 320px;
+    width: 100%;
+    max-width: 350px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    text-align: left; /* Inputs + labels align nicely */
 }
 
-textarea, input, button {
+form label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #e0e0e0;
+}
+
+form input, 
+form textarea, 
+form select {
+    margin-top: 6px;
+    margin-bottom: 12px;
+    padding: 12px;
+    width: 100%;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    background: #2a2a2a;
+    color: #fff;
+}
+
+form input:focus, 
+form textarea:focus, 
+form select:focus {
+    outline: 2px solid #bb86fc;
+}
+
+/* Buttons */
+button, .btn {
+    display: inline-block;
     margin-top: 10px;
     padding: 12px;
     width: 100%;
     border-radius: 6px;
     border: none;
     font-size: 14px;
-}
-
-button {
-    background: #bb86fc;
-    color: white;
     font-weight: bold;
     cursor: pointer;
+    background: #bb86fc;
+    color: #fff;
     transition: background 0.2s ease, transform 0.1s ease;
 }
 
-button:hover {
+button:hover, .btn:hover {
     background: #9a67ea;
     transform: translateY(-2px);
 }
 
-/* --- Playlist Styles --- */
+/* --- Library (audio list) --- */
 .audio-list {
     list-style: none;
     padding: 0;
@@ -105,31 +140,26 @@ audio {
     border-radius: 6px;
 }
 
-/* Buttons inside library */
-.btn {
-    display: inline-block;
-    background: #03dac6;
-    color: #121212;
-    padding: 8px 14px;
+/* Navigation */
+.nav-links, .back-link {
+    margin-top: 30px;
+}
+
+/* Flash messages */
+.flash-message {
+    margin: 15px auto;
+    padding: 12px;
     border-radius: 6px;
-    margin: 5px;
+    max-width: 400px;
     font-weight: bold;
-    transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.btn:hover {
-    background: #00ffc6;
-    transform: translateY(-2px);
+.flash-message.success {
+    background: #1e4620;
+    color: #03dac6;
 }
 
-/* Empty message */
-.empty-message {
-    color: #aaa;
-    font-style: italic;
-    margin-top: 30px;
-}
-
-/* Navigation Links */
-.back-link, .nav-links {
-    margin-top: 30px;
+.flash-message.error {
+    background: #4a1f1f;
+    color: #ff6b6b;
 }
