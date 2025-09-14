@@ -2,39 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Audio Dashboard</title>
+    <title>Dashboard - Russian Flashcards</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header>
-        <h1>🎧 Welcome, {{ session['username'] }}!</h1>
-        <p class="subtitle">What would you like to do today?</p>
-    </header>
+    <div class="container dashboard-container">
+        <header>
+            <h1>🎧 Welcome, {{ session['username'] }}!</h1>
+            <p class="subtitle">What would you like to do today?</p>
+        </header>
 
-    <main class="dashboard">
-        <div class="card">
-            <h2>🗣 Speak</h2>
-            <p>Enter English text and generate Russian translation with audio.</p>
-            <a class="btn" href="{{ url_for('speak') }}">Go →</a>
-        </div>
+        <main class="dashboard">
+            <div class="card">
+                <h2>🗣 Speak</h2>
+                <p>Enter English text and generate Russian translation with audio.</p>
+                <a class="btn" href="{{ url_for('speak') }}">Go →</a>
+            </div>
 
-        <div class="card">
-            <h2>📂 Library</h2>
-            <p>Replay or manage your saved audio files.</p>
-            <a class="btn" href="{{ url_for('library') }}">Go →</a>
-        </div>
+            <div class="card">
+                <h2>📂 Library</h2>
+                <p>Replay or manage your saved audio files.</p>
+                <a class="btn" href="{{ url_for('library') }}">Go →</a>
+            </div>
 
-        <div class="card">
-            <h2>⚙ Settings</h2>
-            <p>Update preferences and audio options.</p>
-            <a class="btn" href="{{ url_for('settings') }}">Go →</a>
-        </div>
+            <div class="card">
+                <h2>⚙ Settings</h2>
+                <p>Update preferences and audio options.</p>
+                <a class="btn" href="{{ url_for('settings') }}">Go →</a>
+            </div>
 
-        <div class="card">
-            <h2>🚪 Logout</h2>
-            <p>End your session safely.</p>
-            <a class="btn danger" href="{{ url_for('logout') }}">Logout</a>
-        </div>
-    </main>
+            <div class="card">
+                <h2>🚪 Logout</h2>
+                <p>End your session safely.</p>
+                <a class="btn danger" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
