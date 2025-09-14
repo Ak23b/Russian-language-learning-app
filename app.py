@@ -166,6 +166,36 @@ def library():
     return render_template("library.html", cards=cards)
 
 # -------------------------
+# Delete Audio
+# -------------------------
+@app.route("/delete_audio/<int:audio_id>", methods=("POST",))
+def delete_audio(audio_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    card = conn.execute(
+        "SELECT * FROM audio_cards WHERE id = ? AND user_id = ?",
+        (audio_id, session["user_id"]),
+    ).fetchone()
+
+    if card:
+        # Remove file from disk if it exists
+        if os.path.exists(card["audio_path"]):
+            try:
+                os.remove(card["audio_path"])
+            except Exception as e:
+                print(f"⚠ Could not delete file: {e}")
+
+        # Delete record from DB
+        conn.execute("DELETE FROM audio_cards WHERE id = ? AND user_id = ?", 
+                     (audio_id, session["user_id"]))
+        conn.commit()
+
+    conn.close()
+    return redirect(url_for("library"))
+
+# -------------------------
 # Settings
 # -------------------------
 @app.route("/settings", methods=("GET", "POST"))
