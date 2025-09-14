@@ -6,22 +6,31 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
+    <div class="container auth-container">
         <h2>Create Account</h2>
-        <form action="{{ url_for('register') }}" method="POST">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
 
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
+        <form action="{{ url_for('register') }}" method="POST" class="form-box">
+            <div class="form-group">
+                <label for="username">👤 Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter username" required>
+            </div>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
+            <div class="form-group">
+                <label for="email">📧 Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter email" required>
+            </div>
 
-            <button type="submit">Register</button>
+            <div class="form-group">
+                <label for="password">🔒 Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="btn">Register</button>
         </form>
 
-        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+        <p class="nav-links">
+            Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+        </p>
     </div>
 </body>
 </html>
