@@ -2,43 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Speak</title>
+    <title>Speak - Russian Flashcards</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h2>English → Russian Text-to-Speech</h2>
+        <h2>🗣 English → Russian Text-to-Speech</h2>
 
-        <!-- Input form always visible -->
-        <form method="POST" action="{{ url_for('speak') }}">
-            <label for="text"><strong>Enter English text:</strong></label><br>
-            <textarea id="text" name="text" placeholder="Type English here..." required>{{ original_text or "" }}</textarea>
-            <button type="submit">Translate & Generate Speech</button>
+        <!-- Input Form -->
+        <form method="POST" action="{{ url_for('speak') }}" class="form-box">
+            <div class="form-group">
+                <label for="text">Enter English text:</label>
+                <textarea id="text" name="text" placeholder="Type English here..." required>{{ original_text or "" }}</textarea>
+            </div>
+            <button type="submit" class="btn">Translate & Generate Speech</button>
         </form>
 
-        <!-- Results appear after processing -->
+        <!-- Results Section -->
         {% if audio_file %}
-            <div class="results">
-                <p><strong>English Input:</strong> {{ original_text }}</p>
-                <p><strong>Translated Russian:</strong> {{ translated_text }}</p>
+        <div class="results card">
+            <p><strong>English Input:</strong> {{ original_text }}</p>
+            <p><strong>Translated Russian:</strong> {{ translated_text }}</p>
 
-                <p><strong>Generated Audio:</strong></p>
-                <audio controls>
-                    <source src="{{ audio_file }}" type="audio/wav">
-                    Your browser does not support the audio element.
-                </audio>
+            <p><strong>Generated Audio:</strong></p>
+            <audio controls>
+                <source src="{{ audio_file }}" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
 
-                <!-- Manual Save Option -->
-                <form method="POST" action="{{ url_for('save_audio') }}">
-                    <!-- Hidden fields to pass all needed info -->
-                    <input type="hidden" name="filename" value="{{ audio_filename }}">
-                    <input type="hidden" name="original_text" value="{{ original_text }}">
-                    <input type="hidden" name="translated_text" value="{{ translated_text }}">
-                    <button type="submit" class="btn">💾 Save this Audio</button>
-                </form>
-            </div>
+            <!-- Save Option -->
+            <form method="POST" action="{{ url_for('save_audio') }}" class="form-box">
+                <input type="hidden" name="filename" value="{{ audio_filename }}">
+                <input type="hidden" name="original_text" value="{{ original_text }}">
+                <input type="hidden" name="translated_text" value="{{ translated_text }}">
+                <button type="submit" class="btn">💾 Save this Audio</button>
+            </form>
+        </div>
         {% endif %}
 
+        <!-- Navigation -->
         <div class="nav-links">
             <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
             <a href="{{ url_for('library') }}">🎵 Audio Library</a>
