@@ -44,19 +44,22 @@ form {
     text-align: left; /* Inputs + labels align nicely */
 }
 
+/* Grouped inputs */
+.form-group {
+    margin-bottom: 15px;
+}
+
 form label {
     display: block;
-    margin-top: 12px;
     font-weight: bold;
     font-size: 14px;
     color: #e0e0e0;
+    margin-bottom: 6px;
 }
 
 form input, 
 form textarea, 
 form select {
-    margin-top: 6px;
-    margin-bottom: 12px;
     padding: 12px;
     width: 100%;
     border-radius: 6px;
@@ -91,6 +94,17 @@ button, .btn {
 button:hover, .btn:hover {
     background: #9a67ea;
     transform: translateY(-2px);
+}
+
+/* Error message inside forms */
+.error {
+    color: #ff6b6b;
+    background: #4a1f1f;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    text-align: center;
 }
 
 /* --- Library (audio list) --- */
