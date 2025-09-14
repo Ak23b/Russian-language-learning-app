@@ -4,33 +4,43 @@
     <meta charset="UTF-8">
     <title>My Saved Audios</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <h1>📂 My Saved Audios</h1>
+    <div class="container">
+        <h1>📂 My Saved Audios</h1>
 
-    <nav>
-        <a href="{{ url_for('speak') }}">🗣 Generate New Audio</a> |
-        <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
-        {% if session.get('username') %}
-            | <a href="{{ url_for('settings') }}">⚙ Settings</a>
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="{{ url_for('speak') }}">🗣 Generate New Audio</a>
+            <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+            {% if session.get('username') %}
+                <a href="{{ url_for('settings') }}">⚙ Settings</a>
+            {% endif %}
+        </div>
+
+        <h2>Saved Audio Files</h2>
+
+        {% if audios %}
+            <ul class="audio-list">
+                {% for audio in audios %}
+                    <li class="audio-item">
+                        <div class="audio-info">
+                            <p>🎵 <strong>{{ audio }}</strong></p>
+                        </div>
+                        <audio controls>
+                            <source src="{{ url_for('static', filename='audio/' ~ audio) }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-message">
+                No audio files saved yet. Try generating some in 
+                <a href="{{ url_for('speak') }}">Speak</a>.
+            </p>
         {% endif %}
-    </nav>
-
-    <h2>Saved Audio Files</h2>
-    {% if audios %}
-        <ul>
-            {% for audio in audios %}
-                <li>
-                    🎵 {{ audio }}
-                    <audio controls>
-                        <source src="{{ url_for('static', filename='audio/' ~ audio) }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No audio files saved yet. Try generating some in <a href="{{ url_for('speak') }}">Speak</a>.</p>
-    {% endif %}
+    </div>
 </body>
 </html>
