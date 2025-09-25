@@ -240,6 +240,7 @@ def update_settings():
 
     return redirect(url_for("settings"))
 
+
 # -------------------------
 # Register
 # -------------------------
